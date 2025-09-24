@@ -1,0 +1,222 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;800;900&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Exo+2:wght@400;600;700;800;900&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Rajdhani:wght@400;500;600;700&display=swap');
+@import 'tailwindcss';
+
+
+@theme {
+  --color-primary: #3B82F6;
+  --color-primary-hover: #2563EB;
+  --color-primary-active: #1D4ED8;
+  --color-primary-light: #93C5FD;
+  --color-primary-lighter: #DBEAFE;
+  --color-primary-dark: #1E40AF;
+
+  --color-secondary: #D946EF;
+  --color-secondary-light: #F0ABFC;
+  --color-secondary-dark: #A21CAF;
+
+  --color-success: #10B981;
+  --color-success-hover: #059669;
+  --color-success-light: #A7F3D0;
+  --color-success-dark: #047857;
+
+  --color-warning: #F59E0B;
+  --color-warning-hover: #D97706;
+  --color-warning-light: #FDE68A;
+  --color-warning-dark: #B45309;
+
+  --color-danger: #EF4444;
+  --color-danger-hover: #DC2626;
+  --color-danger-light: #FCA5A5;
+  --color-danger-dark: #B91C1C;
+
+  --color-background: #FFFFFF;
+  --color-background-secondary: #F8FAFC;
+  --color-background-tertiary: #F1F5F9;
+  --color-background-accent: #FEF2F2;
+  --color-background-dark: #E2E8F0;
+
+  --color-border: #F1F5F9;
+  --color-border-light: #F8FAFC;
+  --color-border-medium: #E2E8F0;
+  --color-border-dark: #94A3B8;
+
+  --color-text-primary: #1F2937;
+  --color-text-secondary: #6B7280;
+  --color-text-tertiary: #9CA3AF;
+  --color-text-accent: #3B82F6;
+  --color-text-white: #FFFFFF;
+
+  --color-card: #FFFFFF;
+  --color-card-secondary: #F8FAFC;
+  --color-card-accent: #FEF2F2;
+  --color-card-hover: #F1F5F9;
+
+  --color-interactive-primary: #3B82F6;
+  --color-interactive-primary-hover: #2563EB;
+  --color-interactive-secondary: #D946EF;
+  --color-interactive-secondary-hover: #A21CAF;
+  --color-interactive-success: #10B981;
+  --color-interactive-success-hover: #059669;
+  --color-interactive-warning: #F59E0B;
+  --color-interactive-warning-hover: #D97706;
+  --color-interactive-danger: #EF4444;
+  --color-interactive-danger-hover: #DC2626;
+}
+
+:root {
+  font-family: 'Inter', system-ui, Avenir, Helvetica, Arial, sans-serif;
+  line-height: 1.5;
+  font-weight: 400;
+
+  font-synthesis: none;
+  text-rendering: optimizeLegibility;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+body {
+  margin: 0;
+  background: #FFFFFF;
+  color: #1A1A1A;
+  min-height: 100vh;
+}
+
+/* Custom animations */
+@keyframes fade-in {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.animate-fade-in {
+  animation: fade-in 0.5s ease-out;
+}
+
+/* Pharmacy marker animations for Google Maps */
+@keyframes pulse-ring {
+  0% {
+    transform: scale(0.8);
+    opacity: 0.5;
+  }
+  50% {
+    transform: scale(1.5);
+    opacity: 0.2;
+  }
+  100% {
+    transform: scale(2);
+    opacity: 0;
+  }
+}
+
+@keyframes marker-bounce {
+  0%, 100% {
+    transform: rotate(45deg) scale(1);
+  }
+  50% {
+    transform: rotate(45deg) scale(1.15);
+  }
+}
+
+/* Universal colorful painted scrollbar for ALL elements */
+*::-webkit-scrollbar,
+html::-webkit-scrollbar,
+body::-webkit-scrollbar,
+div::-webkit-scrollbar,
+select::-webkit-scrollbar,
+option::-webkit-scrollbar,
+.dropdown::-webkit-scrollbar,
+[role="listbox"]::-webkit-scrollbar,
+textarea::-webkit-scrollbar,
+input::-webkit-scrollbar {
+  width: 8px !important;
+  height: 8px !important;
+}
+
+*::-webkit-scrollbar-track,
+html::-webkit-scrollbar-track,
+body::-webkit-scrollbar-track,
+div::-webkit-scrollbar-track,
+select::-webkit-scrollbar-track,
+option::-webkit-scrollbar-track,
+.dropdown::-webkit-scrollbar-track,
+[role="listbox"]::-webkit-scrollbar-track,
+textarea::-webkit-scrollbar-track,
+input::-webkit-scrollbar-track {
+  background: linear-gradient(180deg, #E0F2FE 0%, #F0F9FF 100%) !important;
+  border-radius: 6px !important;
+  border: 1px solid rgba(59, 130, 246, 0.1) !important;
+}
+
+*::-webkit-scrollbar-thumb,
+html::-webkit-scrollbar-thumb,
+body::-webkit-scrollbar-thumb,
+div::-webkit-scrollbar-thumb,
+select::-webkit-scrollbar-thumb,
+option::-webkit-scrollbar-thumb,
+.dropdown::-webkit-scrollbar-thumb,
+[role="listbox"]::-webkit-scrollbar-thumb,
+textarea::-webkit-scrollbar-thumb,
+input::-webkit-scrollbar-thumb {
+  background: linear-gradient(180deg, #3B82F6 0%, #1D4ED8 100%) !important;
+  border-radius: 6px !important;
+  border: 1px solid rgba(255, 255, 255, 0.2) !important;
+  box-shadow: 0 2px 4px rgba(59, 130, 246, 0.3) !important;
+}
+
+*::-webkit-scrollbar-thumb:hover,
+html::-webkit-scrollbar-thumb:hover,
+body::-webkit-scrollbar-thumb:hover,
+div::-webkit-scrollbar-thumb:hover,
+select::-webkit-scrollbar-thumb:hover,
+option::-webkit-scrollbar-thumb:hover,
+.dropdown::-webkit-scrollbar-thumb:hover,
+[role="listbox"]::-webkit-scrollbar-thumb:hover,
+textarea::-webkit-scrollbar-thumb:hover,
+input::-webkit-scrollbar-thumb:hover {
+  background: linear-gradient(180deg, #2563EB 0%, #1E40AF 100%) !important;
+  box-shadow: 0 3px 6px rgba(59, 130, 246, 0.4) !important;
+}
+
+*::-webkit-scrollbar-thumb:active,
+html::-webkit-scrollbar-thumb:active,
+body::-webkit-scrollbar-thumb:active,
+div::-webkit-scrollbar-thumb:active,
+select::-webkit-scrollbar-thumb:active,
+option::-webkit-scrollbar-thumb:active,
+.dropdown::-webkit-scrollbar-thumb:active,
+[role="listbox"]::-webkit-scrollbar-thumb:active,
+textarea::-webkit-scrollbar-thumb:active,
+input::-webkit-scrollbar-thumb:active {
+  background: linear-gradient(180deg, #1D4ED8 0%, #1E3A8A 100%) !important;
+}
+
+/* Force scrollbar styling on dropdown containers */
+select[multiple],
+datalist {
+  scrollbar-width: thin !important;
+  scrollbar-color: #3B82F6 #E0F2FE !important;
+}
+
+/* Firefox fallback */
+* {
+  scrollbar-width: thin !important;
+  scrollbar-color: #3B82F6 #E0F2FE !important;
+}
+
+/* Vibrant global enhancements */
+* {
+  transition: all 0.3s ease;
+}
+
+/* Clean text effects */
+.clean-text {
+  text-shadow: none;
+}
