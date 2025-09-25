@@ -138,21 +138,93 @@ export interface PaginationState {
   hasPrevPage: boolean
 }
 
-// Online Data Sync Types
+// Online Data Sync Types - Enhanced to match comprehensive backend response
 export interface SyncResult {
   citySlug: string
   cityName: string
   success: boolean
+  syncDuration: number
+  timestamp: string
+
+  // Processing results
   processed: number
   created: number
   updated: number
+  skipped?: number
+  errors?: number
+
+  // Coverage and improvement metrics
+  coverage: {
+    before: number
+    after: number
+    improvement: string
+    onlineDiscovered: number
+    successfullyProcessed: number
+    processingSuccess: string
+    duplicatesDetected: number
+    errorRate: string
+  }
+
+  // Quality assessment
+  quality: {
+    highQuality: number
+    mediumQuality: number
+    requiresReview: number
+    withGoogleId: number
+    avgReliability: number
+  }
+
+  // Detailed pharmacy list with enhanced data
   pharmacies: Array<{
     id: number
     name: string
     action: 'created' | 'updated'
+    matchMethod?: string
+    google_place_id?: string
+    reliability?: number
+    requiresReview?: boolean
+    changes?: Array<{
+      field: string
+      old: any
+      new: any
+    }>
+  }>
+
+  // Enhanced search statistics
+  searchStats: {
+    totalFound: number
+    totalProcessed: number
+    processingTimeSeconds: number
+    apiCallsTotal: number
+    apiCallsSuccessful: number
+    searchStrategiesUsed: number
+    avgReliability: number
+    highQuality: number
+    mediumQuality: number
+    lowQuality: number
+    requiresReview: number
+    coverageRadiiUsed: number[]
+    accuracyRate: number
+  }
+
+  // Error reporting and duplicates
+  errorLog?: Array<{
+    pharmacy: string
+    error: string
     google_place_id?: string
   }>
+
+  duplicates?: Array<{
+    online: string
+    existing: string
+    similarity: number
+  }>
+
+  // Success message and recommendations
   message: string
+  recommendations: string[]
+
+  // Legacy compatibility
   searchSummary?: {
     strategiesUsed: number
     uniquePlacesFound: number
