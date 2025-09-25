@@ -392,14 +392,6 @@ export default function GoogleMap(): React.JSX.Element {
               transform: rotate(45deg) scale(1.25) translateY(-1px);
             }
           }
-          @keyframes marker-glow {
-            0%, 100% {
-              box-shadow: 0 0 10px rgba(255,255,255,0.8), 0 0 20px currentColor, 0 0 30px currentColor;
-            }
-            50% {
-              box-shadow: 0 0 20px rgba(255,255,255,1), 0 0 40px currentColor, 0 0 50px currentColor;
-            }
-          }
         `
         document.head.appendChild(styleSheet)
       }
@@ -453,7 +445,6 @@ export default function GoogleMap(): React.JSX.Element {
       markerElement.style.transform = 'rotate(45deg)'
       markerElement.style.zIndex = '2'
       markerElement.style.animation = 'marker-bounce 1.2s infinite ease-in-out, marker-glow 2s infinite ease-in-out'
-      markerElement.style.filter = `drop-shadow(0 0 5px ${markerColor}) drop-shadow(0 0 10px ${markerColor})`
 
       // Add pharmacy cross icon
       const crossIcon = document.createElement('div')

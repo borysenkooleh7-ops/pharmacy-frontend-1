@@ -144,7 +144,7 @@ export default function HomePage(): React.JSX.Element {
       </div>
 
       {/* Mobile Pharmacy List Toggle Button */}
-      <div className="lg:hidden fixed top-20 left-4 z-50">
+      <div className="lg:hidden fixed top-4 left-4 z-50">
         <button
           onClick={() => setIsPharmacyListOpen(true)}
           className="bg-primary text-white p-3 rounded-full shadow-lg hover:bg-primary-hover transition-colors"

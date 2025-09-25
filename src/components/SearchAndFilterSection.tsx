@@ -144,7 +144,7 @@ export default function SearchAndFilterSection(): React.JSX.Element {
           </div>
 
           {/* Filters - Compact */}
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-2 flex-wrap">
             <button
               onClick={() => handleFilterToggle('is24h')}
               className={`px-3 py-1.5 rounded-md border text-xs font-medium transition-all duration-200 ${
