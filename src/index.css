@@ -211,11 +211,6 @@ datalist {
   scrollbar-color: #3B82F6 #E0F2FE !important;
 }
 
-/* Vibrant global enhancements */
-* {
-  transition: all 0.3s ease;
-}
-
 /* Clean text effects */
 .clean-text {
   text-shadow: none;

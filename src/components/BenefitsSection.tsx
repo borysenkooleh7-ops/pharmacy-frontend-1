@@ -29,7 +29,7 @@ export default function BenefitsSection(): React.JSX.Element {
   return (
     <div className="bg-card border border-primary-light rounded-xl shadow-lg p-10 hover:border-primary hover:shadow-xl transition-all duration-300 mt-2">
       <div className="text-center mb-12">
-        <h2 className="text-3xl font-bold text-text-primary mb-4">
+        <h2 className=" text-xl lg:text-3xl font-bold text-text-primary mb-4">
           {t('benefitsTitle')}
         </h2>
         <p className="text-lg text-text-secondary max-w-2xl mx-auto leading-relaxed">

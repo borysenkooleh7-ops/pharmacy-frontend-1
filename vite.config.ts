@@ -12,11 +12,16 @@ export default defineConfig({
   },
   server: {
     port: 3000,
+    allowedHosts: ['apoteka24.me', 'www.apoteka24.me'],
     proxy: {
       '/api': {
         target: 'http://localhost:5000',
         changeOrigin: true,
       },
     },
+    host: true, // allows external connections
   },
+  preview: {
+    allowedHosts: ['apoteka24.me']
+  }
 })

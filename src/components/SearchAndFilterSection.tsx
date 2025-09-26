@@ -100,21 +100,19 @@ export default function SearchAndFilterSection(): React.JSX.Element {
           <div className="flex bg-background-secondary rounded-md p-0.5 border border-border-light">
             <button
               onClick={() => handleSearchTypeChange('pharmacy')}
-              className={`px-3 py-1.5 rounded text-xs font-medium transition-all duration-200 ${
-                searchType === 'pharmacy'
+              className={`px-3 py-1.5 rounded text-xs font-medium transition-all duration-200 ${searchType === 'pharmacy'
                   ? 'bg-primary text-white shadow-sm'
                   : 'text-text-secondary hover:text-white hover:bg-primary'
-              }`}
+                }`}
             >
               {t('searchPlaceholder').split(' ')[0]}
             </button>
             <button
               onClick={() => handleSearchTypeChange('medicine')}
-              className={`px-3 py-1.5 rounded text-xs font-medium transition-all duration-200 ${
-                searchType === 'medicine'
+              className={`px-3 py-1.5 rounded text-xs font-medium transition-all duration-200 ${searchType === 'medicine'
                   ? 'bg-success text-white shadow-sm'
                   : 'text-text-secondary hover:text-white hover:bg-success'
-              }`}
+                }`}
             >
               {t('medicineSearch')}
             </button>
@@ -144,25 +142,23 @@ export default function SearchAndFilterSection(): React.JSX.Element {
           </div>
 
           {/* Filters - Compact */}
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-2 flex-wrap">
             <button
               onClick={() => handleFilterToggle('is24h')}
-              className={`px-3 py-1.5 rounded-md border text-xs font-medium transition-all duration-200 ${
-                filters.is24h
+              className={`px-3 py-1.5 rounded-md border text-xs font-medium transition-all duration-200 ${filters.is24h
                   ? 'bg-success text-white border-success hover:bg-success-hover shadow-sm'
                   : 'bg-white text-text-primary border-border-light hover:bg-success hover:text-white hover:border-success'
-              }`}
+                }`}
             >
               {t('filter24h')}
             </button>
 
             <button
               onClick={() => handleFilterToggle('openSunday')}
-              className={`px-3 py-1.5 rounded-md border text-xs font-medium transition-all duration-200 ${
-                filters.openSunday
+              className={`px-3 py-1.5 rounded-md border text-xs font-medium transition-all duration-200 ${filters.openSunday
                   ? 'bg-warning text-white border-warning hover:bg-warning-hover shadow-sm'
                   : 'bg-white text-text-primary border-border-light hover:bg-warning hover:text-white hover:border-warning'
-              }`}
+                }`}
             >
               {t('filterSunday')}
             </button>
@@ -170,11 +166,10 @@ export default function SearchAndFilterSection(): React.JSX.Element {
             <button
               onClick={() => handleFilterToggle('nearby')}
               disabled={isNearbyLoading}
-              className={`px-4 py-2 rounded-md border text-sm font-semibold transition-all duration-200 flex items-center gap-2 shadow-md ${
-                filters.nearby
+              className={`px-4 py-2 rounded-md border text-sm font-semibold transition-all duration-200 flex items-center gap-2 shadow-md ${filters.nearby
                   ? 'bg-primary text-white border-primary hover:bg-primary-hover shadow-lg transform scale-105'
                   : 'bg-gradient-to-r from-primary to-primary-dark text-white border-primary hover:from-primary-hover hover:to-primary-dark hover:shadow-lg transform hover:scale-105'
-              } ${isNearbyLoading ? 'opacity-50 cursor-not-allowed' : ''}`}
+                } ${isNearbyLoading ? 'opacity-50 cursor-not-allowed' : ''}`}
             >
               {isNearbyLoading && (
                 <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-current"></div>
@@ -186,12 +181,12 @@ export default function SearchAndFilterSection(): React.JSX.Element {
               📍 {t('filterNearby')}
             </button>
 
-              <button
-                onClick={handleClearFilters}
-                className="px-3 py-1.5 rounded-md border border-danger text-danger hover:bg-danger hover:text-white transition-all duration-200 text-xs font-medium shadow-sm"
-              >
-                {t('clearFilters')}
-              </button>
+            <button
+              onClick={handleClearFilters}
+              className="px-3 py-1.5 rounded-md border border-danger text-danger hover:bg-danger hover:text-white transition-all duration-200 text-xs font-medium shadow-sm"
+            >
+              {t('clearFilters')}
+            </button>
           </div>
         </div>
 

@@ -115,7 +115,7 @@ export default function Header(): React.JSX.Element {
                   Apoteka24.me
                 </span>
               </h1>
-              <p className="text-md text-[#fff]">{t('slogan')}</p>
+              <p className=" px-10 lg:px-0 text-md text-[#fff]">{t('slogan')}</p>
             </button>
           </div>
 

@@ -1,9 +1,11 @@
 import { useAppDispatch, useAppSelector } from '../hooks/redux'
-import { setSelectedPharmacy } from '../store/pharmacySlice'
 import { useTranslation } from '../translations'
 import LoadingSpinner from './ui/LoadingSpinner'
 import { SearchIcon, PhoneIcon, ClockIcon } from './ui/Icons'
 import type { Pharmacy } from '../store/slices/types'
+import { API_CONFIG } from '../config/api'
+import { deletePharmacy } from '../store/slices/pharmaciesSlice'
+import { setSelectedPharmacy, fetchPharmacies, fetchNearbyPharmacies } from '../store/pharmacySlice'
 
 interface PharmacyListProps {
   onPharmacySelect?: () => void
@@ -11,14 +13,83 @@ interface PharmacyListProps {
 
 export default function PharmacyList({ onPharmacySelect }: PharmacyListProps): React.JSX.Element {
   const dispatch = useAppDispatch()
-  const { language } = useAppSelector(state => state.ui)
-  const { pharmacies, selectedPharmacy, loading } = useAppSelector(state => state.pharmacy)
+  const { language, userLocation } = useAppSelector(state => state.ui)
+  const { pharmacies, selectedCity,  selectedPharmacy, loading, filters } = useAppSelector(state => state.pharmacy)
   const t = useTranslation(language)
 
   const handlePharmacyClick = (pharmacy: Pharmacy): void => {
     dispatch(setSelectedPharmacy(pharmacy))
     onPharmacySelect?.()
   }
+
+  const handleDeletePharmacy = async (pharmacyId: number): Promise<void> => {
+    const isAdmin = (): boolean => {
+      try {
+        const adminKey = sessionStorage.getItem('adminKey')
+        return adminKey === API_CONFIG.ADMIN_KEY
+      } catch {
+        return false
+      }
+    }
+
+    // Check if user is admin
+    if (!isAdmin()) {
+      alert(t('notAuthorized') || 'Not authorized to delete pharmacies')
+      return
+    }
+
+    // Find the pharmacy to get its name for confirmation
+    const pharmacy = pharmacies.find(p => p.id === pharmacyId)
+    const pharmacyName = pharmacy ? (language === 'me' ? pharmacy.name_me : (pharmacy.name_en || pharmacy.name_me)) : `ID ${pharmacyId}`
+
+    // Confirm deletion
+    if (window.confirm(`${t('confirmDelete') || 'Are you sure you want to delete this pharmacy'}: ${pharmacyName}?`)) {
+      try {
+        console.log('Attempting to delete pharmacy...')
+
+        // Dispatch the delete action
+        await dispatch(deletePharmacy(pharmacyId)).unwrap()
+
+        console.log('Pharmacy deleted successfully')
+        alert(t('pharmacyDeletedSuccess') || 'Pharmacy deleted successfully')
+
+        // Refresh the pharmacy list based on current context
+        if (selectedCity && !filters.nearby) {
+          // If viewing city pharmacies, refresh city pharmacies
+          console.log('Refreshing city pharmacies after deletion')
+          dispatch(fetchPharmacies({
+            params: {
+              cityId: selectedCity.id,
+              unlimited: true,
+              ...filters
+            },
+            language
+          }))
+        } else if (filters.nearby && userLocation) {
+          // If viewing nearby pharmacies, refresh nearby search
+          console.log('Refreshing nearby pharmacies after deletion')
+          const defaultRadius = parseInt(import.meta.env.VITE_SEARCH_RADIUS) || 2000
+          const defaultLimit = parseInt(import.meta.env.VITE_N_PHARMACIES) || 20
+
+          dispatch(fetchNearbyPharmacies({
+            lat: userLocation.latitude,
+            lng: userLocation.longitude,
+            radius: defaultRadius,
+            limit: defaultLimit,
+            language
+          }))
+        } else {
+          // If in some other state, reload to refresh
+          window.location.reload()
+        }
+
+      } catch (error: any) {
+        console.error('Delete failed:', error)
+        alert(`${t('deletePharmacyFailed') || 'Failed to delete pharmacy'}: ${error.message || t('unknownError') || 'Unknown error'}`)
+      }
+    }
+  }
+
 
   if (loading.pharmacies) {
     return (
@@ -62,12 +133,17 @@ export default function PharmacyList({ onPharmacySelect }: PharmacyListProps): R
             <div
               key={pharmacy.id}
               onClick={() => handlePharmacyClick(pharmacy)}
-              className={`p-5 border-b border-primary-light last:border-b-0 cursor-pointer transition-all duration-300 hover:bg-card-hover hover:shadow-md transform hover:scale-[1.01] ${
+              className={`relative p-5 border-b border-primary-light last:border-b-0 cursor-pointer transition-all duration-300 hover:bg-card-hover hover:shadow-md transform hover:scale-[1.01] ${
                 selectedPharmacy?.id === pharmacy.id
                   ? 'bg-primary-lighter border-l-4 border-l-primary shadow-lg ring-2 ring-primary ring-opacity-20'
                   : 'border-l-4 border-l-transparent hover:border-l-primary active:bg-primary-lighter'
               }`}
             >
+              <button className="absolute mt-18 ml-42 bg-[#f66] rounded-[10px] hover:bg-red-600 text-white text-sm px-3 py-1  duration-200"
+              onClick = {() => handleDeletePharmacy(pharmacy.id)}
+              >
+                🗑️ delete
+              </button>
               <div className="flex justify-between items-start mb-3">
                 <h4 className="font-semibold text-text-primary leading-tight text-lg">
                   {language === 'me' ? pharmacy.name_me : (pharmacy.name_en || pharmacy.name_me)}
