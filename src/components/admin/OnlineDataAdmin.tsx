@@ -33,6 +33,50 @@ export default function OnlineDataAdmin({ onMessage }: OnlineDataAdminProps) {
     error
   } = useAppSelector(state => state.onlineData)
 
+  // Pharmacy data table state - moved to top level to fix hooks order
+  const [searchTerm, setSearchTerm] = useState('')
+  const [actionFilter, setActionFilter] = useState<'all' | 'created' | 'updated'>('all')
+  const [qualityFilter, setQualityFilter] = useState<'all' | 'high' | 'medium' | 'low' | 'review'>('all')
+  const [cityFilter, setCityFilter] = useState('all')
+
+  // Compute pharmacy data at top level
+  const allPharmacies = useMemo(() => {
+    return completedSyncs.flatMap(sync =>
+      (sync.result?.pharmacies || []).map(pharmacy => ({
+        ...pharmacy,
+        cityName: sync.cityName,
+        syncResult: sync.result
+      }))
+    )
+  }, [completedSyncs])
+
+  // Filter pharmacies based on search and filters
+  const filteredPharmacies = useMemo(() => {
+    return allPharmacies.filter(pharmacy => {
+      // Search filter
+      const matchesSearch = searchTerm === '' ||
+        pharmacy.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        pharmacy.google_place_id?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        pharmacy.cityName.toLowerCase().includes(searchTerm.toLowerCase())
+
+      // Action filter
+      const matchesAction = actionFilter === 'all' || pharmacy.action === actionFilter
+
+      // Quality filter
+      const reliability = pharmacy.reliability || 0
+      const matchesQuality = qualityFilter === 'all' ||
+        (qualityFilter === 'high' && reliability >= 80) ||
+        (qualityFilter === 'medium' && reliability >= 60 && reliability < 80) ||
+        (qualityFilter === 'low' && reliability < 60) ||
+        (qualityFilter === 'review' && pharmacy.requiresReview)
+
+      // City filter
+      const matchesCity = cityFilter === 'all' || pharmacy.cityName === cityFilter
+
+      return matchesSearch && matchesAction && matchesQuality && matchesCity
+    })
+  }, [allPharmacies, searchTerm, actionFilter, qualityFilter, cityFilter])
+
   useEffect(() => {
     dispatch(fetchSyncableCities())
   }, [dispatch])
@@ -210,52 +254,12 @@ export default function OnlineDataAdmin({ onMessage }: OnlineDataAdminProps) {
   }
 
   const renderPharmacyDataTable = () => {
-    const [searchTerm, setSearchTerm] = useState('')
-    const [actionFilter, setActionFilter] = useState<'all' | 'created' | 'updated'>('all')
-    const [qualityFilter, setQualityFilter] = useState<'all' | 'high' | 'medium' | 'low' | 'review'>('all')
-    const [cityFilter, setCityFilter] = useState('all')
-
-    const allPharmacies = completedSyncs.flatMap(sync =>
-      (sync.result?.pharmacies || []).map(pharmacy => ({
-        ...pharmacy,
-        cityName: sync.cityName,
-        syncResult: sync.result
-      }))
-    )
-
     if (allPharmacies.length === 0) {
       return null
     }
 
     // Get unique cities for filter dropdown
     const uniqueCities = Array.from(new Set(allPharmacies.map(p => p.cityName))).sort()
-
-    // Filter pharmacies based on search and filters
-    const filteredPharmacies = useMemo(() => {
-      return allPharmacies.filter(pharmacy => {
-        // Search filter
-        const matchesSearch = searchTerm === '' ||
-          pharmacy.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-          pharmacy.google_place_id?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-          pharmacy.cityName.toLowerCase().includes(searchTerm.toLowerCase())
-
-        // Action filter
-        const matchesAction = actionFilter === 'all' || pharmacy.action === actionFilter
-
-        // Quality filter
-        const reliability = pharmacy.reliability || 0
-        const matchesQuality = qualityFilter === 'all' ||
-          (qualityFilter === 'high' && reliability >= 80) ||
-          (qualityFilter === 'medium' && reliability >= 60 && reliability < 80) ||
-          (qualityFilter === 'low' && reliability < 60) ||
-          (qualityFilter === 'review' && pharmacy.requiresReview)
-
-        // City filter
-        const matchesCity = cityFilter === 'all' || pharmacy.cityName === cityFilter
-
-        return matchesSearch && matchesAction && matchesQuality && matchesCity
-      })
-    }, [allPharmacies, searchTerm, actionFilter, qualityFilter, cityFilter])
 
     // Calculate comprehensive statistics for filtered data
     const totalPharmacies = filteredPharmacies.length

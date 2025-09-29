@@ -3,6 +3,7 @@ import { useAppDispatch, useAppSelector } from '../hooks/redux'
 import { Loader } from '@googlemaps/js-api-loader'
 import { setSelectedPharmacy, fetchPharmacies, fetchNearbyPharmacies } from '../store/pharmacySlice'
 import { deletePharmacy } from '../store/slices/pharmaciesSlice'
+import { setUserLocation } from '../store/uiSlice'
 import { API_CONFIG } from '../config/api'
 import { useTranslation } from '../translations'
 import type { Pharmacy } from '../store/slices/types'
@@ -33,6 +34,54 @@ export default function GoogleMap(): React.JSX.Element {
     } catch {
       return false
     }
+  }
+
+  // Get current user location from browser GPS and update Redux
+  const getCurrentUserLocation = (): void => {
+    if (!navigator.geolocation) {
+      console.warn('Geolocation is not supported by this browser')
+      return
+    }
+
+    console.log('🔍 Requesting user location from browser GPS...')
+
+    navigator.geolocation.getCurrentPosition(
+      (position) => {
+        const { latitude, longitude, accuracy } = position.coords
+        const location = { latitude, longitude }
+
+        console.log('📍 User location detected:', {
+          latitude,
+          longitude,
+          accuracy: `${Math.round(accuracy)}m`,
+          timestamp: new Date(position.timestamp).toISOString()
+        })
+
+        // Update Redux store with GPS location
+        dispatch(setUserLocation(location))
+      },
+      (error) => {
+        console.error('❌ Failed to get user location:', error)
+        let errorMessage = 'Unable to get your location'
+        switch (error.code) {
+          case error.PERMISSION_DENIED:
+            errorMessage = 'Location access denied. Please enable location services.'
+            break
+          case error.POSITION_UNAVAILABLE:
+            errorMessage = 'Location information is unavailable'
+            break
+          case error.TIMEOUT:
+            errorMessage = 'Location request timed out'
+            break
+        }
+        console.warn(errorMessage)
+      },
+      {
+        enableHighAccuracy: true,      // Use GPS for accurate location
+        timeout: 15000,                // 15 second timeout
+        maximumAge: 60000,            // Accept cached position up to 1 minute
+      }
+    )
   }
 
   // Handle pharmacy deletion for admin users
@@ -102,8 +151,9 @@ export default function GoogleMap(): React.JSX.Element {
   const defaultCenter = { lat: 42.4415, lng: 19.2621 }
 
   const getCenterCoordinates = (): { lat: number; lng: number } => {
-    // ALWAYS prioritize user location for map center (anywhere in the world)
+    // Priority: User location from GPS
     if (userLocation) {
+      console.log('🎯 Using user GPS location for map center:', userLocation)
       return {
         lat: userLocation.latitude,
         lng: userLocation.longitude
@@ -154,7 +204,7 @@ export default function GoogleMap(): React.JSX.Element {
 
       mapInstanceRef.current = new google.maps.Map(mapRef.current, {
         center,
-        zoom: 18,
+        zoom: userLocation ? 16 : 12, // Higher zoom for user location
         mapId: 'DEMO_MAP_ID',
         mapTypeControl: true,
         mapTypeControlOptions: {
@@ -190,6 +240,9 @@ export default function GoogleMap(): React.JSX.Element {
       // Update markers after map is initialized, even if pharmacies array is currently empty
       updateMarkers()
       updateUserLocationMarker()
+
+      // Request user location for accurate positioning
+      getCurrentUserLocation()
     } catch (error) {
       console.error('Error loading Google Maps:', error)
     }
@@ -210,6 +263,8 @@ export default function GoogleMap(): React.JSX.Element {
       lng: userLocation.longitude
     }
 
+    console.log('📍 Updating user marker with GPS location:', userPosition)
+
     // Create custom user location marker with enhanced visibility
     const userMarkerElement = document.createElement('div')
     userMarkerElement.style.position = 'relative'
@@ -218,7 +273,7 @@ export default function GoogleMap(): React.JSX.Element {
     userMarkerElement.style.borderRadius = '50%'
     userMarkerElement.style.backgroundColor = '#1976D2' // More distinctive blue
     userMarkerElement.style.border = '4px solid #ffffff'
-    // userMarkerElement.style.boxShadow = '0 4px 12px rgba(0,0,0,0.4), 0 0 0 2px rgba(25, 118, 210, 0.3)'
+    userMarkerElement.style.boxShadow = '0 4px 12px rgba(0,0,0,0.4), 0 0 0 2px rgba(25, 118, 210, 0.3)'
     userMarkerElement.style.cursor = 'pointer'
 
     // Add multiple pulsing rings for better visibility
@@ -271,7 +326,7 @@ export default function GoogleMap(): React.JSX.Element {
     userMarkerRef.current.addListener('click', () => {
       // Calculate distance to nearest pharmacy for display
       let nearestDistance = 'calculating...'
-      if (pharmacies.length > 0) {
+      if (pharmacies.length > 0 && userLocation) {
         const distances = pharmacies
           .filter(p => p.lat && p.lng)
           .map(p => {
@@ -606,7 +661,7 @@ export default function GoogleMap(): React.JSX.Element {
         userMarkerRef.current = null
       }
     }
-  }, [selectedCity, pharmacies, userLocation])
+  }, [selectedCity, pharmacies])
 
   useEffect(() => {
     if (mapInstanceRef.current) {
@@ -616,6 +671,31 @@ export default function GoogleMap(): React.JSX.Element {
       updateUserLocationMarker()
     }
   }, [pharmacies, language, userLocation])
+
+  // Update user marker and re-center map when location is obtained
+  useEffect(() => {
+    if (mapInstanceRef.current && userLocation) {
+      console.log('🎯 User location obtained, updating marker and re-centering map')
+
+      // Update user marker
+      updateUserLocationMarker()
+
+      // Re-center map to user location
+      const center = getCenterCoordinates()
+      mapInstanceRef.current.setCenter(center)
+
+      // Set appropriate zoom for user location
+      mapInstanceRef.current.setZoom(16)
+
+      // Preserve tilt when changing to user location
+      setTimeout(() => {
+        const currentMapType = mapInstanceRef.current.getMapTypeId()
+        if (currentMapType === 'satellite' || currentMapType === 'hybrid') {
+          mapInstanceRef.current.setTilt(45)
+        }
+      }, 100)
+    }
+  }, [userLocation])
 
   // Additional effect to handle the case where map initializes before pharmacy data loads
   useEffect(() => {
@@ -691,9 +771,11 @@ export default function GoogleMap(): React.JSX.Element {
   }
 
   return (
-    <div
-      ref={mapRef}
-      className="w-full h-[700px] bg-gray-100 rounded-lg"
-    />
+    <div className="relative w-full h-[700px] bg-gray-100 transition-all duration-300 rounded-lg">
+      <div
+        ref={mapRef}
+        className="w-full h-full rounded-lg"
+      />
+    </div>
   )
 }
