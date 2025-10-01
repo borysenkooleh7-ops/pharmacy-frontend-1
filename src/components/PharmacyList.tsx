@@ -139,11 +139,11 @@ export default function PharmacyList({ onPharmacySelect }: PharmacyListProps): R
                   : 'border-l-4 border-l-transparent hover:border-l-primary active:bg-primary-lighter'
               }`}
             >
-              <button className="absolute mt-18 ml-42 bg-[#f66] rounded-[10px] hover:bg-red-600 text-white text-sm px-3 py-1  duration-200"
+              {/* <button className="absolute mt-18 ml-42 bg-[#f66] rounded-[10px] hover:bg-red-600 text-white text-sm px-3 py-1  duration-200"
               onClick = {() => handleDeletePharmacy(pharmacy.id)}
               >
                 🗑️ delete
-              </button>
+              </button> */}
               <div className="flex justify-between items-start mb-3">
                 <h4 className="font-semibold text-text-primary leading-tight text-lg">
                   {language === 'me' ? pharmacy.name_me : (pharmacy.name_en || pharmacy.name_me)}

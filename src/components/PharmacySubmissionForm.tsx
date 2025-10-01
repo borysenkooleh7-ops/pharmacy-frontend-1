@@ -1,10 +1,21 @@
 import { useState, useEffect } from 'react'
+import { MapContainer, TileLayer, Marker, useMapEvents, LayersControl } from 'react-leaflet'
 import { apiService } from '../config/api'
 import { useTranslation } from '../translations'
 import { useAppSelector } from '../hooks/redux'
 import LoadingSpinner from './ui/LoadingSpinner'
 import ErrorMessage from './ui/ErrorMessage'
 import SuccessModal from './ui/SuccessModal'
+import 'leaflet/dist/leaflet.css'
+import L from 'leaflet'
+
+// Fix Leaflet default marker icon issue
+delete (L.Icon.Default.prototype as any)._getIconUrl
+L.Icon.Default.mergeOptions({
+  iconRetinaUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-icon-2x.png',
+  iconUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-icon.png',
+  shadowUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-shadow.png'
+})
 
 export default function PharmacySubmissionForm(): React.JSX.Element {
   const { language } = useAppSelector(state => state.ui)
@@ -15,6 +26,10 @@ export default function PharmacySubmissionForm(): React.JSX.Element {
   const [submissionLoading, setSubmissionLoading] = useState(false)
   const [submissionError, setSubmissionError] = useState<string | null>(null)
   const [submissionSuccess, setSubmissionSuccess] = useState(false)
+
+  // Location input method: 'manual' or 'map'
+  const [locationMethod, setLocationMethod] = useState<'manual' | 'map'>('manual')
+  const [mapPosition, setMapPosition] = useState<[number, number]>([42.4304, 19.2594]) // Default: Podgorica
 
   const [formData, setFormData] = useState({
     name_me: '',
@@ -71,6 +86,23 @@ export default function PharmacySubmissionForm(): React.JSX.Element {
       ...prev,
       [name]: type === 'checkbox' ? checked : value
     }))
+  }
+
+  // Map click handler component
+  function LocationMarker() {
+    useMapEvents({
+      click(e) {
+        const { lat, lng } = e.latlng
+        setMapPosition([lat, lng])
+        setFormData(prev => ({
+          ...prev,
+          lat: lat.toFixed(6),
+          lng: lng.toFixed(6)
+        }))
+      }
+    })
+
+    return mapPosition ? <Marker position={mapPosition} /> : null
   }
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -204,40 +236,114 @@ export default function PharmacySubmissionForm(): React.JSX.Element {
             />
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            <div>
-              <label htmlFor="lat" className="block text-sm font-semibold text-text-primary mb-3">
-                {t('latitude')}
-              </label>
-              <input
-                type="number"
-                step="0.000001"
-                id="lat"
-                name="lat"
-                value={formData.lat}
-                onChange={handleChange}
-                placeholder="42.441180"
-                className="w-full px-4 py-4 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary transition-all duration-200 bg-background text-text-primary placeholder:text-text-tertiary"
-              />
-              <p className="text-xs text-text-secondary mt-2">{t('gpsCoordinate')} (e.g., 42.441180)</p>
+          {/* Location Method Selector */}
+          <div>
+            <label className="block text-sm font-semibold text-text-primary mb-3">
+              {t('locationMethod') || 'Location Input Method'}
+            </label>
+            <div className="flex gap-4 mb-4">
+              <button
+                type="button"
+                onClick={() => setLocationMethod('manual')}
+                className={`flex-1 px-4 py-3 rounded-lg border-2 transition-all ${
+                  locationMethod === 'manual'
+                    ? 'border-primary bg-primary text-white font-semibold'
+                    : 'border-gray-200 text-text-secondary hover:border-gray-300'
+                }`}
+              >
+                📝 {t('manualInput') || 'Manual Input'}
+              </button>
+              <button
+                type="button"
+                onClick={() => setLocationMethod('map')}
+                className={`flex-1 px-4 py-3 rounded-lg border-2 transition-all ${
+                  locationMethod === 'map'
+                    ? 'border-primary bg-primary text-white font-semibold'
+                    : 'border-gray-200 text-text-secondary hover:border-gray-300'
+                }`}
+              >
+                🗺️ {t('selectOnMap') || 'Select on Map'}
+              </button>
             </div>
 
-            <div>
-              <label htmlFor="lng" className="block text-sm font-semibold text-text-primary mb-3">
-                {t('longitude')}
-              </label>
-              <input
-                type="number"
-                step="0.000001"
-                id="lng"
-                name="lng"
-                value={formData.lng}
-                onChange={handleChange}
-                placeholder="19.262112"
-                className="w-full px-4 py-4 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary transition-all duration-200 bg-background text-text-primary placeholder:text-text-tertiary"
-              />
-              <p className="text-xs text-text-secondary mt-2">{t('gpsCoordinate')} (e.g., 19.262112)</p>
-            </div>
+            {/* Manual Input Method */}
+            {locationMethod === 'manual' && (
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div>
+                  <label htmlFor="lat" className="block text-sm font-semibold text-text-primary mb-3">
+                    {t('latitude')}
+                  </label>
+                  <input
+                    type="number"
+                    step="0.000001"
+                    id="lat"
+                    name="lat"
+                    value={formData.lat}
+                    onChange={handleChange}
+                    placeholder="42.441180"
+                    className="w-full px-4 py-4 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary transition-all duration-200 bg-background text-text-primary placeholder:text-text-tertiary"
+                  />
+                  <p className="text-xs text-text-secondary mt-2">{t('gpsCoordinate')} (e.g., 42.441180)</p>
+                </div>
+
+                <div>
+                  <label htmlFor="lng" className="block text-sm font-semibold text-text-primary mb-3">
+                    {t('longitude')}
+                  </label>
+                  <input
+                    type="number"
+                    step="0.000001"
+                    id="lng"
+                    name="lng"
+                    value={formData.lng}
+                    onChange={handleChange}
+                    placeholder="19.262112"
+                    className="w-full px-4 py-4 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary transition-all duration-200 bg-background text-text-primary placeholder:text-text-tertiary"
+                  />
+                  <p className="text-xs text-text-secondary mt-2">{t('gpsCoordinate')} (e.g., 19.262112)</p>
+                </div>
+              </div>
+            )}
+
+            {/* Map Selection Method */}
+            {locationMethod === 'map' && (
+              <div>
+                <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-4">
+                  <p className="text-sm text-blue-800">
+                    📍 {t('clickMapToSelect') || 'Click on the map to select the pharmacy location'}
+                  </p>
+                  {formData.lat && formData.lng && (
+                    <p className="text-xs text-blue-600 mt-2">
+                      Selected: {formData.lat}, {formData.lng}
+                    </p>
+                  )}
+                </div>
+
+                <div className="h-96 rounded-lg overflow-hidden border-2 border-gray-200">
+                  <MapContainer
+                    center={mapPosition}
+                    zoom={13}
+                    style={{ height: '100%', width: '100%', cursor: 'pointer' }}
+                  >
+                    <LayersControl position="topright">
+                      <LayersControl.BaseLayer checked name="Street Map">
+                        <TileLayer
+                          attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'
+                          url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+                        />
+                      </LayersControl.BaseLayer>
+                      <LayersControl.BaseLayer name="Satellite">
+                        <TileLayer
+                          attribution='&copy; <a href="https://www.esri.com/">Esri</a>'
+                          url="https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}"
+                        />
+                      </LayersControl.BaseLayer>
+                    </LayersControl>
+                    <LocationMarker />
+                  </MapContainer>
+                </div>
+              </div>
+            )}
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
